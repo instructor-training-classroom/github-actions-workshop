@@ -1,0 +1,22 @@
+name: Hello World
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  hello-world:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Print Hello World
+        run: echo "Hello, World!"
+      
+      - name: Print current date
+        run: date
+      
+      - name: Print working directory
+        run: pwd
