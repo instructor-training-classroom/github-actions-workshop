@@ -1,0 +1,68 @@
+name: Part 1 - Build and Upload Artifact
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create working directory
+        run: |
+          mkdir -p artifacts/data
+          echo "This workflow demonstrates file operations and artifact upload"
+      
+      - name: Create sample files
+        run: |
+          echo "Hello from Part 1 Workflow!" > artifacts/data/hello.txt
+          echo "Build timestamp: $(date)" > artifacts/data/build-info.txt
+          echo "Commit SHA: ${{ github.sha }}" >> artifacts/data/build-info.txt
+          echo "Repository: ${{ github.repository }}" >> artifacts/data/build-info.txt
+      
+      - name: Copy application files
+        run: |
+          # Copy some project files to the artifacts directory
+          cp MyApp/appsettings.json artifacts/data/
+          cp MyApp.Tests/UnitTest1.cs artifacts/data/sample-test.cs
+          echo "Files copied successfully"
+      
+      - name: List files before zipping
+        run: |
+          echo "Contents of artifacts directory:"
+          ls -la artifacts/data/
+      
+      - name: Create zip archive
+        run: |
+          cd artifacts
+          zip -r project-bundle.zip data/
+          echo "Zip archive created"
+          ls -la
+      
+      - name: Generate summary file
+        run: |
+          echo "# Part 1 Build Summary" > artifacts/summary.md
+          echo "" >> artifacts/summary.md
+          echo "**Build Date:** $(date)" >> artifacts/summary.md
+          echo "**Files Created:** $(ls -1 artifacts/data/ | wc -l)" >> artifacts/summary.md
+          echo "**Archive Size:** $(du -h artifacts/project-bundle.zip | cut -f1)" >> artifacts/summary.md
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            artifacts/project-bundle.zip
+            artifacts/summary.md
+          retention-days: 5
+      
+      - name: Completion message
+        run: |
+          echo "✅ Part 1 workflow completed successfully!"
+          echo "Artifact 'build-output' has been uploaded and is ready for Part 2"

@@ -1,0 +1,117 @@
+name: Part 2 - Download and Process Artifact
+
+on:
+  workflow_run:
+    workflows: ["Part 1 - Build and Upload Artifact"]
+    types:
+      - completed
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    # Only run if Part 1 succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download artifact from Part 1
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: downloaded-artifacts
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          repository: ${{ github.repository }}
+      
+      - name: List downloaded files
+        run: |
+          echo "📦 Downloaded artifacts:"
+          ls -la downloaded-artifacts/
+      
+      - name: Display summary from Part 1
+        run: |
+          echo "=== Part 1 Build Summary ==="
+          cat downloaded-artifacts/summary.md
+          echo "============================"
+      
+      - name: Unzip the archive
+        run: |
+          mkdir -p processed
+          cd downloaded-artifacts
+          unzip -q project-bundle.zip -d ../processed
+          echo "Archive extracted successfully"
+      
+      - name: List extracted files
+        run: |
+          echo "📂 Extracted files:"
+          find processed -type f -exec ls -lh {} \;
+      
+      - name: Process files - Read content
+        run: |
+          echo "=== Processing extracted files ==="
+          echo ""
+          echo "📄 Content of hello.txt:"
+          cat processed/data/hello.txt
+          echo ""
+          echo "📄 Content of build-info.txt:"
+          cat processed/data/build-info.txt
+          echo ""
+      
+      - name: Copy and transform files
+        run: |
+          mkdir -p output
+          # Copy files with new names
+          cp processed/data/hello.txt output/processed-hello.txt
+          cp processed/data/build-info.txt output/processed-build-info.txt
+          
+          # Create a combined file
+          echo "=== COMBINED REPORT ===" > output/combined-report.txt
+          echo "" >> output/combined-report.txt
+          cat processed/data/hello.txt >> output/combined-report.txt
+          echo "" >> output/combined-report.txt
+          cat processed/data/build-info.txt >> output/combined-report.txt
+          echo "" >> output/combined-report.txt
+          echo "Processed by: Part 2 Workflow" >> output/combined-report.txt
+          echo "Processing timestamp: $(date)" >> output/combined-report.txt
+      
+      - name: Create new zip with processed files
+        run: |
+          cd output
+          zip -r processed-bundle.zip *.txt
+          echo "New archive created with processed files"
+          ls -la
+      
+      - name: Generate Part 2 report
+        run: |
+          echo "# Part 2 Processing Report" > output/part2-report.md
+          echo "" >> output/part2-report.md
+          echo "**Processing Date:** $(date)" >> output/part2-report.md
+          echo "**Source Workflow:** Part 1 - Build and Upload Artifact" >> output/part2-report.md
+          echo "**Source Run ID:** ${{ github.event.workflow_run.id }}" >> output/part2-report.md
+          echo "**Files Processed:** $(ls -1 processed/data/ | wc -l)" >> output/part2-report.md
+          echo "**Output Files Created:** $(ls -1 output/*.txt | wc -l)" >> output/part2-report.md
+          echo "" >> output/part2-report.md
+          echo "## Processed Files" >> output/part2-report.md
+          echo "\`\`\`" >> output/part2-report.md
+          cat output/combined-report.txt >> output/part2-report.md
+          echo "\`\`\`" >> output/part2-report.md
+      
+      - name: Upload processed artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: processed-output
+          path: |
+            output/
+          retention-days: 5
+      
+      - name: Display final summary
+        run: |
+          echo "✅ Part 2 workflow completed successfully!"
+          echo ""
+          echo "=== Part 2 Report ==="
+          cat output/part2-report.md
+          echo "===================="
+          echo ""
+          echo "Artifact 'processed-output' has been uploaded with all processed files"
