@@ -1,0 +1,32 @@
+name: MyApp Build & Publish Application
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore github-actions-workshop.sln
+    
+    - name: Build solution
+      run: dotnet build github-actions-workshop.sln --configuration Release --no-restore
+    
+    - name: Publish application
+      run: dotnet publish MyApp/MyApp.csproj --configuration Release --no-build --output ./publish
+    
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: myapp-build
+        path: ./publish

@@ -27,8 +27,8 @@ public class HomeControllerTests
         var result = _controller.Index();
 
         // Assert
-        // Assert.IsType<ViewResult>(result);
-        Assert.True(false);
+        Assert.IsType<ViewResult>(result);
+        // Assert.True(false);
     }
 
     [Fact]
