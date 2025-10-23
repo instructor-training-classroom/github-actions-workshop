@@ -17,10 +17,10 @@ jobs:
         dotnet-version: '9.0.x'
     
     - name: Restore dependencies
-      run: dotnet restore MyApp/MyApp.csproj
+      run: dotnet restore github-actions-workshop.sln
     
-    - name: Build application
-      run: dotnet build MyApp/MyApp.csproj --configuration Debug --no-restore
+    - name: Build solution
+      run: dotnet build github-actions-workshop.sln --configuration Debug --no-restore
     
     - name: Run tests
-      run: dotnet test MyApp.Tests/MyApp.Tests.csproj --configuration Debug --no-build --verbosity normal
+      run: dotnet test github-actions-workshop.sln --configuration Debug --no-build --verbosity normal
