@@ -20,7 +20,7 @@ jobs:
       run: dotnet restore MyApp/MyApp.csproj
     
     - name: Build application
-      run: dotnet build MyApp/MyApp.csproj --configuration Release --no-restore
+      run: dotnet build MyApp/MyApp.csproj --configuration Debug --no-restore
     
     - name: Run tests
-      run: dotnet test MyApp.Tests/MyApp.Tests.csproj --configuration Release --no-build --verbosity normal
+      run: dotnet test MyApp.Tests/MyApp.Tests.csproj --configuration Debug --no-build --verbosity normal
