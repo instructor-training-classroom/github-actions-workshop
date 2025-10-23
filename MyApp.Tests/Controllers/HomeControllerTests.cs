@@ -28,6 +28,7 @@ public class HomeControllerTests
 
         // Assert
         Assert.IsType<ViewResult>(result);
+        Assert.True(false);
     }
 
     [Fact]
